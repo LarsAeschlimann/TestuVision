@@ -1,0 +1,24 @@
+--cpu=Cortex-M4.fp
+"testuvision\startup_stm32f401xe.o"
+"testuvision\main.o"
+"testuvision\stm32f4xx_hal_msp.o"
+"testuvision\stm32f4xx_it.o"
+"testuvision\system_stm32f4xx.o"
+"testuvision\stm32f4xx_hal_flash_ramfunc.o"
+"testuvision\stm32f4xx_hal_dma.o"
+"testuvision\stm32f4xx_hal_tim.o"
+"testuvision\stm32f4xx_hal_pwr_ex.o"
+"testuvision\stm32f4xx_hal_gpio.o"
+"testuvision\stm32f4xx_hal_flash_ex.o"
+"testuvision\stm32f4xx_hal.o"
+"testuvision\stm32f4xx_hal_tim_ex.o"
+"testuvision\stm32f4xx_hal_cortex.o"
+"testuvision\stm32f4xx_hal_flash.o"
+"testuvision\stm32f4xx_hal_rcc_ex.o"
+"testuvision\stm32f4xx_hal_rcc.o"
+"testuvision\stm32f4xx_hal_pwr.o"
+"testuvision\stm32f4xx_hal_dma_ex.o"
+--library_type=microlib --strict --scatter "TestuVision\TestuVision.sct"
+--diag_suppress=L6329 --summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
+--info sizes --info totals --info unused --info veneers
+--list "TestuVision.map" -o TestuVision\TestuVision.axf
