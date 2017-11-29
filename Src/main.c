@@ -158,7 +158,7 @@ int main(void)
   while (1)
   {	
 		
-		encode(Inc_red);
+		 encode(Inc_red);
 		
 		if(cnt_cw & 0x01)HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, GPIO_PIN_SET);else{HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, GPIO_PIN_RESET);}
 		if(cnt_cw & 0x02)HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_SET);else{HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_RESET);}
