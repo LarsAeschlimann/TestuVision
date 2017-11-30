@@ -51,11 +51,8 @@ TIM_HandleTypeDef htim3;
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
 unsigned int cnt = 0;
-char cnta[20]; //Array für counter variablen
 unsigned int cnt_ccw = 0;
 unsigned int cnt_cw = 0;
-char a1seq = 0; 
-char b1seq = 0;
 char contrseq1[4] = {0x01,0x02,0x04,0x09};
 char contrseq2[4] = {0x00,0x00,0x01,0x03};
 volatile bool a1;
@@ -67,7 +64,6 @@ volatile unsigned int timecount;
 enum state{S0,S1,S2,S3};
 enum state my_state = S0;
 
-bool flag = 0;
 
 //Variables for transmition
 
@@ -80,7 +76,11 @@ static void MX_TIM3_Init(void);
 
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
-int encode(char index){
+int encode(char index);
+/* USER CODE END PFP */
+
+/* USER CODE BEGIN 0 */
+int encode(char index){//Funktion für die Encoderauswertung
 	int val;
 	switch(my_state){
 			case S0:
@@ -93,9 +93,9 @@ int encode(char index){
 				if(a[index] == 0 && b[index] == 0)my_state = S2;
 				if(a[index] == 1 && b[index] == 1){
 					my_state = S0;
-					if(timecount >= Time2)cnt_cw = Speed3+cnt_cw;
-					if(timecount >= Time1 && timecount <Time2)cnt_cw = Speed2+cnt_cw;
-					if(timecount <Time1)cnt_cw++;
+					if(timecount >= Time2)val = Speed3+val;
+					if(timecount >= Time1 && timecount <Time2)val = Speed2+val;
+					if(timecount <Time1)val++;
 				}
 			break;
 			
@@ -107,19 +107,15 @@ int encode(char index){
 			case S3:
 				if(a[index] == 1 && b[index] == 1){
 					my_state = S0;
-					if(timecount >= Time2)cnt_cw = Speed3-cnt_cw;
-					if(timecount >= Time1 && timecount <Time2)cnt_cw = Speed2-cnt_cw;
-					if(timecount <Time1)cnt_cw--;
+					if(timecount >= Time2)val = Speed3-val;
+					if(timecount >= Time1 && timecount <Time2)val = Speed2-val;
+					if(timecount <Time1)val--;
 				}
 				if(a[index] == 0 && b[index] == 0)my_state = S2;
 			break;
 		}
 		return val;
 }
-/* USER CODE END PFP */
-
-/* USER CODE BEGIN 0 */
-
 /* USER CODE END 0 */
 
 int main(void)
@@ -158,78 +154,13 @@ int main(void)
   while (1)
   {	
 		
-		 encode(Inc_red);
+		cnt_cw = encode(Inc_red);
 		
 		if(cnt_cw & 0x01)HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, GPIO_PIN_SET);else{HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, GPIO_PIN_RESET);}
 		if(cnt_cw & 0x02)HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_SET);else{HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_RESET);}
 		if(cnt_cw & 0x04)HAL_GPIO_WritePin(GPIOB, GPIO_PIN_9, GPIO_PIN_SET);else{HAL_GPIO_WritePin(GPIOB, GPIO_PIN_9, GPIO_PIN_RESET);}
 		if(cnt_cw & 0x08)HAL_GPIO_WritePin(GPIOB, GPIO_PIN_8, GPIO_PIN_SET);else{HAL_GPIO_WritePin(GPIOB, GPIO_PIN_8, GPIO_PIN_RESET);}
-		
-		
-		
-		//alter Code. wird nicht mehr benötigt
-		/*
-		if((a1 == b1)&&(flag)&&(cnt<4)){
-	
-			flag = 0;
-			cnt++;
-			a1seq = a1seq << 1;
-			a1seq |= a1;
-			b1seq = b1seq << 1;
-			b1seq |= b1;
-			
-			
-			a1seq &= 0x0f;
-			b1seq &= 0x0f;
-			
-		}
-		if((a1 ^ b1)&&(!flag)&&(cnt<4)){
-			
-			flag = 1;
-			cnt++;
-			a1seq = a1seq << 1;
-			a1seq |= a1;
-			b1seq = b1seq << 1;
-			b1seq |= b1;
-			
-			
-			a1seq &= 0x0f;
-			b1seq &= 0x0f;
-			
-		}
-		
-		if(((a1seq != contrseq1[cnt-1])^(a1seq != contrseq2[cnt-1]))&&!leftright){
-			flag = 0;
-			cnt = 0;
-			a1seq = 0;
-			b1seq = 0;
-		}
-		
-		if(((b1seq != contrseq1[cnt-1])^(b1seq != contrseq2[cnt-1]))&&leftright){
-			flag = 0;
-			cnt = 0;
-			a1seq = 0;
-			b1seq = 0;
-		}
-		
-		
-		if(cnt>=4){
-			if((a1seq == 0x09)&&(b1seq == 0x03)){
-				cnt_cw++;
-				HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET);
-			}
-		
-			if((a1seq == 0x03)&&(b1seq == 0x09)){
-				HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);			
-			}
-			flag = 0;
-			cnt = 0;
-			a1seq = 0;
-			b1seq = 0;
-			a1 = 0;
-			b1 = 0;
-		}*/
-		
+				
 		
   /* USER CODE END WHILE */
 
