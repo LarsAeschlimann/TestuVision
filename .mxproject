@@ -1,7 +1,7 @@
 [PreviousGenFiles]
-HeaderPath=C:/Users/Lars Aeschlimann/Dropbox/01_Studium/05_Semester/04_Projektarbeit und System Engineering/01_Semesterprojekt/03_Software/03_Firmware/02_Firmware_Encoder/TestuVision/Inc
+HeaderPath=C:/Users/Lars Aeschlimann/Desktop/Firmwares_LR_Control/TestuVision/Inc
 HeaderFiles=stm32f4xx_it.h;stm32f4xx_hal_conf.h;main.h;
-SourcePath=C:/Users/Lars Aeschlimann/Dropbox/01_Studium/05_Semester/04_Projektarbeit und System Engineering/01_Semesterprojekt/03_Software/03_Firmware/02_Firmware_Encoder/TestuVision/Src
+SourcePath=C:/Users/Lars Aeschlimann/Desktop/Firmwares_LR_Control/TestuVision/Src
 SourceFiles=stm32f4xx_it.c;stm32f4xx_hal_msp.c;main.c;
 
 [PreviousLibFiles]

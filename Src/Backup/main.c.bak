@@ -51,21 +51,19 @@ TIM_HandleTypeDef htim3;
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
 unsigned int cnt = 0;
-char cnta[20]; //Array für counter variablen
 unsigned int cnt_ccw = 0;
 unsigned int cnt_cw = 0;
-char a1seq = 0; 
-char b1seq = 0;
 char contrseq1[4] = {0x01,0x02,0x04,0x09};
 char contrseq2[4] = {0x00,0x00,0x01,0x03};
-char signalAB = 0;
-bool leftright = 0;
 volatile bool a1;
 volatile bool b1;
+
+volatile bool a[19];
+volatile bool b[19];
+volatile unsigned int timecount;
 enum state{S0,S1,S2,S3};
 enum state my_state = S0;
 
-bool flag = 0;
 
 //Variables for transmition
 
@@ -78,13 +76,46 @@ static void MX_TIM3_Init(void);
 
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
-void encode(char index,bool a,bool b){
-	;
-}
+int encode(char index);
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
-
+int encode(char index){//Funktion für die Encoderauswertung
+	int val;
+	switch(my_state){
+			case S0:
+				timecount = TIMECOUNT;
+				if(a[index] == 0 && b[index] == 1)my_state = S1;
+				if(a[index] == 1 && b[index] == 0)my_state = S3;			
+			break;
+			
+			case S1:
+				if(a[index] == 0 && b[index] == 0)my_state = S2;
+				if(a[index] == 1 && b[index] == 1){
+					my_state = S0;
+					if(timecount >= Time2)val = Speed3+val;
+					if(timecount >= Time1 && timecount <Time2)val = Speed2+val;
+					if(timecount <Time1)val++;
+				}
+			break;
+			
+			case S2:
+				if(a[index] == 1 && b[index] == 0)my_state = S3;
+				if(a[index] == 0 && b[index] == 1)my_state = S1;			
+			break;
+			
+			case S3:
+				if(a[index] == 1 && b[index] == 1){
+					my_state = S0;
+					if(timecount >= Time2)val = Speed3-val;
+					if(timecount >= Time1 && timecount <Time2)val = Speed2-val;
+					if(timecount <Time1)val--;
+				}
+				if(a[index] == 0 && b[index] == 0)my_state = S2;
+			break;
+		}
+		return val;
+}
 /* USER CODE END 0 */
 
 int main(void)
@@ -122,96 +153,14 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {	
-		signalAB = a1 << 1;
-		signalAB |= b1;
-		signalAB &= 0x03;
 		
-		switch(my_state){
-			case S0:
-				if(signalAB == 01)my_state = S1;
-				if(signalAB == 10)my_state = S3;
+		cnt_cw = encode(Inc_red);
+		
+		if(cnt_cw & 0x01)HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, GPIO_PIN_SET);else{HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, GPIO_PIN_RESET);}
+		if(cnt_cw & 0x02)HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_SET);else{HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_RESET);}
+		if(cnt_cw & 0x04)HAL_GPIO_WritePin(GPIOB, GPIO_PIN_9, GPIO_PIN_SET);else{HAL_GPIO_WritePin(GPIOB, GPIO_PIN_9, GPIO_PIN_RESET);}
+		if(cnt_cw & 0x08)HAL_GPIO_WritePin(GPIOB, GPIO_PIN_8, GPIO_PIN_SET);else{HAL_GPIO_WritePin(GPIOB, GPIO_PIN_8, GPIO_PIN_RESET);}
 				
-			break;
-			
-			case S1:
-				if(signalAB == 00)my_state = S2;
-				if(signalAB == 11)my_state = S0;
-			HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET);
-			break;
-			
-			case S2:
-				if(signalAB == 10)my_state = S3;
-				if(signalAB == 01)my_state = S1;
-				
-			break;
-			
-			case S3:
-				if(signalAB == 11)my_state = S0;
-				if(signalAB == 00)my_state = S2;
-			break;
-		}
-		/*
-		if((a1 == b1)&&(flag)&&(cnt<4)){
-	
-			flag = 0;
-			cnt++;
-			a1seq = a1seq << 1;
-			a1seq |= a1;
-			b1seq = b1seq << 1;
-			b1seq |= b1;
-			
-			
-			a1seq &= 0x0f;
-			b1seq &= 0x0f;
-			
-		}
-		if((a1 ^ b1)&&(!flag)&&(cnt<4)){
-			
-			flag = 1;
-			cnt++;
-			a1seq = a1seq << 1;
-			a1seq |= a1;
-			b1seq = b1seq << 1;
-			b1seq |= b1;
-			
-			
-			a1seq &= 0x0f;
-			b1seq &= 0x0f;
-			
-		}
-		
-		if(((a1seq != contrseq1[cnt-1])^(a1seq != contrseq2[cnt-1]))&&!leftright){
-			flag = 0;
-			cnt = 0;
-			a1seq = 0;
-			b1seq = 0;
-		}
-		
-		if(((b1seq != contrseq1[cnt-1])^(b1seq != contrseq2[cnt-1]))&&leftright){
-			flag = 0;
-			cnt = 0;
-			a1seq = 0;
-			b1seq = 0;
-		}
-		
-		
-		if(cnt>=4){
-			if((a1seq == 0x09)&&(b1seq == 0x03)){
-				cnt_cw++;
-				HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET);
-			}
-		
-			if((a1seq == 0x03)&&(b1seq == 0x09)){
-				HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);			
-			}
-			flag = 0;
-			cnt = 0;
-			a1seq = 0;
-			b1seq = 0;
-			a1 = 0;
-			b1 = 0;
-		}*/
-		
 		
   /* USER CODE END WHILE */
 
@@ -288,7 +237,7 @@ static void MX_TIM3_Init(void)
   htim3.Instance = TIM3;
   htim3.Init.Prescaler = 23;
   htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim3.Init.Period = 499;
+  htim3.Init.Period = 50;
   htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   if (HAL_TIM_Base_Init(&htim3) != HAL_OK)
   {
@@ -329,10 +278,19 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, LD2_Pin|GPIO_PIN_6|GPIO_PIN_7, GPIO_PIN_RESET);
 
-  /*Configure GPIO pins : PC0 PC1 PC5 */
-  GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_5;
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_8|GPIO_PIN_9, GPIO_PIN_RESET);
+
+  /*Configure GPIO pins : PC15 PC0 */
+  GPIO_InitStruct.Pin = GPIO_PIN_15|GPIO_PIN_0;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : PC1 PC5 */
+  GPIO_InitStruct.Pin = GPIO_PIN_1|GPIO_PIN_5;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
@@ -343,12 +301,12 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : LD2_Pin */
-  GPIO_InitStruct.Pin = LD2_Pin;
+  /*Configure GPIO pins : LD2_Pin PA6 PA7 */
+  GPIO_InitStruct.Pin = LD2_Pin|GPIO_PIN_6|GPIO_PIN_7;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(LD2_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
   /*Configure GPIO pins : PB12 PB13 PB14 */
   GPIO_InitStruct.Pin = GPIO_PIN_12|GPIO_PIN_13|GPIO_PIN_14;
@@ -366,6 +324,13 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pin = GPIO_PIN_6;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : PB8 PB9 */
+  GPIO_InitStruct.Pin = GPIO_PIN_8|GPIO_PIN_9;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
 }

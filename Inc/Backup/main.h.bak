@@ -67,6 +67,39 @@
 extern volatile bool a1;
 extern volatile bool b1;
 
+extern volatile bool a[19];
+extern volatile bool b[19];
+
+extern volatile unsigned int timecount;
+
+#define TIMECOUNT 500 //Speed measurement encoder
+#define Time1		200
+#define Time2		300
+#define Speed1	1 //Faktor 1
+#define Speed2	2 //Faktor 2
+#define Speed3	4 //Faktor 4
+
+#define Inc_red					0
+#define Inc_orange			1
+#define Inc_yellow			2
+#define Inc_green				3
+#define Inc_aquamarin		4
+#define Inc_blue				5
+#define Inc_violett			6
+#define Inc_magenta			7
+#define Inc_contrast		8
+#define Inc_exposure		9
+#define Inc_shadow			10
+#define Inc_lights			11
+#define Inc_black				12
+#define Inc_white				13
+#define Inc_clarity			14
+#define Inc_dynamic			15
+#define Inc_saturation	16
+#define Inc_prog				17
+#define Inc_crop				18
+
+
 #define IncA_pin_red					GPIO_PIN_15
 #define IncB_pin_red					GPIO_PIN_0
 #define IncA_pin_orange				GPIO_PIN_7
@@ -144,7 +177,7 @@ extern volatile bool b1;
 #define IncA_port_prog 				GPIOA
 #define IncB_port_prog 				GPIOA
 #define IncA_port_crop 				GPIOA
-#define IncA_port_crop 				GPIOA
+#define IncB_port_crop 				GPIOA
 
 /* USER CODE END Private defines */
 
